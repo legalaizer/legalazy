@@ -1,5 +1,4 @@
 import starter from "./Starter.js";
-import SETTINGS from "./settings.js";
 import levelSettings from "./settings/levelSettings.js";
 import {
     Enemy,
@@ -13,6 +12,9 @@ import { gameManager } from "./Manager.js";
 import ScoreBar from "./ScoreBar.js";
 import sceneManager from "./scenes/SceneManager.js";
 import GraphicsHelper from "./GraphicsHelper";
+import Utils from "./utils.js";
+import STYLES from "./styles.js";
+import SETTINGS from "./settings.js";
 
 const ENEMY_BY_ID = {
     1: EnemyEasyLevel,
@@ -24,7 +26,10 @@ const ENEMY_BY_ID = {
 
 class LevelManager {
     constructor() {
-        this.level = 2;
+        this.level = 0;
+        this.money = 0;
+
+        this._spriteText = null;
 
         starter.registerTick(d => {
             this.tick(d);
@@ -36,7 +41,10 @@ class LevelManager {
             switch (data.action) {
                 case "enemy:destroy": {
                     // TODO: use different value depending on data.info
+                    console.log(data);
                     this.scoreBar.update(100);
+                    this.increaseMoney = data.price;
+
                     break;
                 }
                 default:
@@ -52,6 +60,14 @@ class LevelManager {
 
         starter.initiated.then(() => {
             starter.field.addChild(this.container);
+
+            this._spriteText = Utils.drawText({
+                parent: starter.field,
+                text: `$ ${this.money}`,
+                x: -SETTINGS.appSizes.width / 2 + 200,
+                y: SETTINGS.appSizes.height / 2 - 40,
+                style: STYLES.score,
+            });
         });
     }
 
@@ -82,6 +98,20 @@ class LevelManager {
             el.alpha = 1;
             xPosition += 70;
         });
+    }
+
+    set increaseMoney(val) {
+        this.money += val;
+        this._spriteText.text = `$ ${this.money}`;
+    }
+
+    set decreaseMoney(val) {
+        if (this.money < 0) {
+            return;
+        }
+
+        this.money -= val;
+        this._spriteText.text = `$ ${this.money}`;
     }
 
     restart() {
@@ -120,7 +150,7 @@ class LevelManager {
                 }
 
                 const enemy = this.setEnemy({
-                    x: x + step * j,
+                    x: x + step * j + 20,
                     y: y,
                     step: step,
                     id: levelSettings[this.level][i][j],

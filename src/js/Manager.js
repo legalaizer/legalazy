@@ -49,6 +49,7 @@ class Manager {
                     this.emit("updateScore", {
                         action: "enemy:destroy",
                         info: { enemyType: enemy.enemyType },
+                        price: enemy.price,
                     });
                 }
             });

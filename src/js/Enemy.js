@@ -22,7 +22,7 @@ export default class Enemy {
         this.container = null;
         this.sprite = null;
         this.healthBar = null;
-
+        this._moveTween = null;
         this.step = step;
         this.biasX = step;
         this.maxLives = 0;
@@ -43,6 +43,7 @@ export default class Enemy {
         this.healthBar.setParent(this.container);
 
         this._updateHealthBar();
+        this._move();
 
         new Emitter(this);
     }
@@ -80,13 +81,12 @@ export default class Enemy {
     }
 
     _move() {
-        this.container.x += this.speed * this.dir;
-        this.biasX -= this.speed;
+        const startX = this.container.x;
 
-        if (this.biasX <= 0) {
-            this.dir *= -1;
-            this.biasX = this.step;
-        }
+        this._moveTween = new TWEEN.Tween(this.container)
+            .to({ x: [startX - 100, startX, startX + 100, startX] }, 3000)
+            .repeat(Infinity)
+            .start();
     }
 
     _shoot(delta) {
@@ -126,9 +126,16 @@ export default class Enemy {
     destroy(animate = true) {
         this._destroyed = true;
         this.emit("destroy");
+
+        if (this._moveTween) {
+            this._moveTween.stop();
+            this._moveTween = null;
+        }
+
         if (this._animationTween) {
             this._animationTween.stop();
         }
+
         if (animate) {
             new Money(this.container.x + this.sprite.width / 2, this.container.y + this.sprite.height / 2);
             new Explosion().animate("a:1..10", this.collisionInfo.center.x, this.collisionInfo.center.y);
@@ -141,7 +148,6 @@ export default class Enemy {
     }
 
     tick(delta) {
-        this._move(delta);
         this._shoot(delta);
     }
 }
@@ -150,7 +156,8 @@ export class EnemyEasyLevel extends Enemy {
     constructor(settings) {
         super(settings);
 
-        this.maxLives = 3;
+        this.maxLives = 2;
+        this.price = 1;
         this._lives = this.maxLives;
 
         this._timeBetweenShot = Utils.randomNumber(3000, 5000);
@@ -179,6 +186,7 @@ export class EnemyMediumLevel extends Enemy {
 
         this.maxLives = 4;
         this._lives = this.maxLives;
+        this.price = 2;
 
         this._timeBetweenShot = Utils.randomNumber(2500, 5000);
     }
@@ -224,6 +232,7 @@ export class TrapDillerMediumBoss extends Enemy {
         this._lives = this.maxLives;
         this.speed = 0;
         this.avatarImagePath = "avatar_TrapDiller";
+        this.price = 10;
 
         this._timeBetweenShot = Utils.randomNumber(2500, 5000);
 
@@ -264,6 +273,10 @@ export class TrapDillerMediumBoss extends Enemy {
     }
 
     _startAnimation() {
+        if (this._moveTween) {
+            this._moveTween.stop();
+            this._moveTween = null;
+        }
         const base_y = this.container.y;
 
         this._animationTween = new TWEEN.Tween(this.container)
@@ -298,6 +311,7 @@ export class LiunkMediumBoss extends Enemy {
         this._lives = this.maxLives;
         this.speed = 0;
         this.avatarImagePath = "avatar_Liunk";
+        this.price = 10;
 
         this._timeBetweenShot = Utils.randomNumber(2500, 5000);
         this._startAnimation();
@@ -337,6 +351,11 @@ export class LiunkMediumBoss extends Enemy {
     }
 
     _startAnimation() {
+        if (this._moveTween) {
+            this._moveTween.stop();
+            this._moveTween = null;
+        }
+
         const base_y = this.container.y;
 
         this._animationTween = new TWEEN.Tween(this.container)
@@ -372,6 +391,7 @@ export class OzmenHardBoss extends Enemy {
         this.speed = 0;
         this._timeBetweenShot = Utils.randomNumber(2500, 5000);
         this.avatarImagePath = "avatar_OZMEN";
+        this.price = 20;
 
         this._startAnimation();
         this._updateHealthBar();
@@ -414,6 +434,11 @@ export class OzmenHardBoss extends Enemy {
     }
 
     _startAnimation() {
+        if (this._moveTween) {
+            this._moveTween.stop();
+            this._moveTween = null;
+        }
+
         const base_x = this.container.x;
 
         this._animationTween = new TWEEN.Tween(this.container)

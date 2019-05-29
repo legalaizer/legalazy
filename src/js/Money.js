@@ -7,7 +7,9 @@ class Money {
         this._sprite = null;
         this._coinTween = null;
 
-        this._init(x, y);
+        starter.initiated.then(() => {
+            this._init(x, y);
+        });
     }
 
     _init(x, y) {
@@ -16,9 +18,9 @@ class Money {
             x,
             y,
         });
-
         this._sprite.setParent(starter.field);
         this._sprite.anchor.set(0.5);
+
         this._animate();
     }
 
