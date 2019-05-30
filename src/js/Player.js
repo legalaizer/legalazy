@@ -122,7 +122,7 @@ class Player {
             const bulletY = base_y - gun_height;
             gameManager.registerBullet(new PlayerDefaultBullet(bulletX, bulletY, 1, this));
 
-            this._timeBetweenShot = 200;
+            this._timeBetweenShot = 500;
         }
     }
 
